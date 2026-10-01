@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Docker To-Do App</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: 80px auto;
+            padding: 35px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #222222;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333333;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cccccc;
+            border-radius: 6px;
+            font-size: 15px;
+            font-family: Arial, sans-serif;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #555555;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 6px;
+            background: #222222;
+            color: #ffffff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #444444;
+        }
+
+        button:disabled {
+            background: #888888;
+            cursor: not-allowed;
+        }
+
+        #result {
+            display: none;
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 6px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .success {
+            display: block !important;
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .error {
+            display: block !important;
+            background: #ffebee;
+            color: #c62828;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Docker To-Do App</h1>
+
+        <form id="todoForm">
+
+            <div class="form-group">
+                <label for="itemName">Item Name</label>
+
+                <input
+                    type="text"
+                    id="itemName"
+                    name="itemName"
+                    placeholder="Enter item name"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="itemDescription">Item Description</label>
+
+                <textarea
+                    id="itemDescription"
+                    name="itemDescription"
+                    rows="5"
+                    placeholder="Enter item description"
+                    required
+                ></textarea>
+            </div>
+
+            <button type="submit" id="submitButton">
+                Submit To-Do
+            </button>
+
+        </form>
+
+        <div id="result"></div>
+
+    </div>
+
+    <script>
+        const form = document.getElementById("todoForm");
+        const result = document.getElementById("result");
+        const submitButton = document.getElementById("submitButton");
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const itemName = document.getElementById("itemName").value.trim();
+            const itemDescription =
+                document.getElementById("itemDescription").value.trim();
+
+            result.className = "";
+            result.style.display = "none";
+            result.textContent = "";
+
+            submitButton.disabled = true;
+            submitButton.textContent = "Submitting...";
+
+            try {
+                const response = await fetch("/submit", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        itemName: itemName,
+                        itemDescription: itemDescription
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    result.className = "success";
+
+                    result.textContent =
+                        `${data.message} Item ID: ${data.itemId}`;
+
+                    form.reset();
+                } else {
+                    result.className = "error";
+
+                    result.textContent =
+                        data.error || "Something went wrong.";
+                }
+
+            } catch (error) {
+                result.className = "error";
+
+                result.textContent =
+                    "Unable to connect to the backend.";
+            }
+
+            submitButton.disabled = false;
+            submitButton.textContent = "Submit To-Do";
+        });
+    </script>
+
+</body>
+</html>
