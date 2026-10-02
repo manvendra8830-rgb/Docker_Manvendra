@@ -4,14 +4,16 @@ const path = require("path");
 const app = express();
 const PORT = 3000;
 
+const BACKEND_URL =
+    process.env.BACKEND_URL || "http://127.0.0.1:5000";
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(express.static(path.join(__dirname, "public")));
 
 app.post("/submit", async (req, res) => {
     try {
-        const response = await fetch("http://backend:5000/submittodoitem", {
+        const response = await fetch(`${BACKEND_URL}/submittodoitem`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
